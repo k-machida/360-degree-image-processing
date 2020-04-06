@@ -1,13 +1,13 @@
-# 2�̋��჌���Y�ɂ��360�x�摜�̍쐬
+# 2つの魚眼レンズによる360度画像の作成
 This software is released under the MIT License, see LICENSE.txt.
 
-���̃X�N���v�g�ł�2�̋��჌���Y�𓋍ڂ���360�x�J�����f�o�C�X����擾�����摜�ɑ΂��A360�x�摜�i�����~���摜�j�̍쐬���s���܂��B
+このスクリプトでは2つの魚眼レンズを搭載した360度カメラデバイスから取得した画像に対し、360度画像（正距円筒画像）の作成を行います。
 
 
-### 360�x�J�����Ŏ擾�����摜�̓ǂݍ���
+### 360度カメラで取得した画像の読み込み
 
 
-�ŏ��ɉ摜��ǂݍ��݂܂��B360�J��������擾�����摜�́A2�̋��჌���Y�摜�����E�Ɍ�������1�̉摜�Ƃ��Ĉ����܂��B
+最初に画像を読み込みます。360カメラから取得した画像は、2つの魚眼レンズ画像を左右に結合した1つの画像として扱われます。
 
 
 ```matlab
@@ -18,10 +18,10 @@ imshow(I)
 
 ![figure_0.png](doc_images/figure_0.png)
 
-### 2�̋���摜�͈͎̔w��
+### 2つの魚眼画像の範囲指定
 
 
-�e�X�̉摜�ɕ������邽�߂ɔ͈͂��w�肵�܂��B
+各々の画像に分割するために範囲を指定します。
 
 
 ```matlab
@@ -35,14 +35,14 @@ c2 = drawcircle('Center',[3*w/4,h/2],'Radius',h/2,'Color','red');
 
 ![figure_1.png](doc_images/figure_1.png)
 
-### �摜�̕���
+### 画像の分割
 
 
-�͈͎w�肵�����ʂɊ�Â��A�摜�̕������s���܂��B
+範囲指定した結果に基づき、画像の分割を行います。
 
 
 ```matlab
-% �摜�̕���
+% 画像の分割
 xy1 = c1.Center-c1.Radius;
 xy2 = c2.Center-c2.Radius;
 
@@ -53,60 +53,60 @@ IR = imcrop(I,[c2.Center-c2.Radius, c2.Radius*2, c2.Radius*2]);
 
 IR = imresize(IR,size(IL,[1 2]));
 
-% ���������摜�̊m�F
+% 分割した画像の確認
 figure
 montage({IL,IR},'BackgroundColor','white','BorderSize',30)
 ```
 
 ![figure_2.png](doc_images/figure_2.png)
 
-### �����~���摜(Equirectangular Image)�ւ̕ϊ��Ɗm�F
+### 正距円筒画像(Equirectangular Image)への変換と確認
 
 
-�����̉摜�ɑ΂��Đ����~���}�ւ̓��e������֐����g���čs���܂��B���̊֐��͋���摜�̍��W�����̍��W�ɕϊ����A�p�p�����[�^�̉�]�������s������ɁA�����~�����W�ɕϊ����܂��B�ȉ��̃p�����[�^��ύX���A�����~���摜�̕ω����m�F���Ă݂܂��B
+左側の画像に対して正距円筒図への投影を自作関数を使って行います。この関数は魚眼画像の座標を球体座標に変換し、角パラメータの回転処理を行った後に、正距円筒座標に変換します。以下のパラメータを変更し、正距円筒画像の変化を確認してみます。
 
 
 
-   -  fov�F���჌���Y�̎���p�x 
-   -  roll�F�摜�̉�] 
-   -  tilt�F���������̈ړ� 
-   -  pan�F���������̈ړ� 
+   -  fov：魚眼レンズの視野角度 
+   -  roll：画像の回転 
+   -  tilt：垂直方向の移動 
+   -  pan：水平方向の移動 
 
 ```matlab
-% �p�����[�^�̐ݒ�
-fov  = 180; % [�x]
-roll = 1;   % [�x]
-tilt = 0;   % [�x]
-pan  = 2;   % [�x]
+% パラメータの設定
+fov  = 180; % [度]
+roll = 1;   % [度]
+tilt = 0;   % [度]
+pan  = 2;   % [度]
 
-% ����֐��ɂ�鐳���~���}�ւ̓��e
+% 自作関数による正距円筒図への投影
 EL = imfish2equ(IL,fov,roll,tilt,pan);
 
-% ����
+% 可視化
 imshow(EL)
 ```
 
 ![figure_3.png](doc_images/figure_3.png)
 
-### 2�̐����~���摜�̈ʒu�����i�X�e�B�b�`���O�j
+### 2つの正距円筒画像の位置調整（スティッチング）
 
 
-�e�X�̉摜�𐳋��~���摜�ɕϊ����A2�̉摜�̃Y�������Ȃ��Ȃ�悤�ɏd�ˍ��킹(�X�e�B�b�`���O)���s���܂��B�X�e�B�b�`���O�ɂ͊e�X�̉摜��������ʒ��o���s���}�b�`���O���Ƃ��@������悤�ł����A����͊e�p�����[�^���}�j���A���Œ������Ă����܂��B���̃Z�N�V���������s��A���̃Z�N�V�������J��Ԃ����s���A2�̉摜���悭�d�Ȃ�悤�Ɋe�p�����[�^�𒲐����Ă��������B
-
-
-
-
-�}�j���A����������x���s���ꍇ�́A[App Designer](https://jp.mathworks.com/help/matlab/app-designer.html)���g���Ă����̏������A�v��������ƕ֗��ł��B��x�A�v�����쐬����΁A�v���O���~���O�m�����Ȃ����ł��}�E�X����œ������������s�ł��܂��B
+各々の画像を正距円筒画像に変換し、2つの画像のズレが少なくなるように重ね合わせ(スティッチング)を行います。スティッチングには各々の画像から特徴量抽出を行いマッチングをとる手法もあるようですが、今回は各パラメータをマニュアルで調整していきます。このセクションを実行後、次のセクションを繰り返し実行し、2つの画像がよく重なるように各パラメータを調整してください。
 
 
 
 
-�܂��A[MATLAB Compiler�E](https://jp.mathworks.com/help/compiler/index.html)���i�����p���邱�ƂŁA�쐬�����A�v�������s�`���t�@�C�������AMATLAB���C�Z���X�̖�������PC�ւ̔z�z�Ǝ��s���\�ɂȂ�܂��B
+マニュアル操作を何度も行う場合は、[App Designer](https://jp.mathworks.com/help/matlab/app-designer.html)を使ってこれらの処理をアプリ化すると便利です。一度アプリを作成すれば、プログラミング知識がない方でもマウス操作で同じ処理を実行できます。
+
+
+
+
+また、[MATLAB Compiler・](https://jp.mathworks.com/help/compiler/index.html)製品を活用することで、作成したアプリを実行形式ファイル化し、MATLABライセンスの無い他のPCへの配布と実行が可能になります。
 
 
 ```matlab
-% �摜�m�F�p��Figure������
-% ���J����Window�͕����Ɏ��̃Z�N�V���������s
+% 画像確認用のFigureを準備
+% ※開いたWindowは閉じずに次のセクションを実行
 figure
 p1 = uipanel('Position',[0 0 0.5 0.7]);
 p2 = uipanel('Position',[0.5,0,0.5 0.7]);
@@ -126,36 +126,36 @@ title('Overlapped Image','Parent',ax3);
 
 
 
-�O�̃Z�N�V�����ŊJ����Figure�����Ȃ���e�p�����[�^��ύX���A��̉摜���悭�d�Ȃ�悤�ɒ������Ă��������B
+前のセクションで開いたFigureを見ながら各パラメータを変更し、二つの画像がよく重なるように調整してください。
 
 
 
 
-��x���߂��p�����[�^�͓���360�x�J�����Ŏ擾�������̉摜�ɂ��̂܂ܓK�p�����邱�Ƃ��ł��܂��B
+一度求めたパラメータは同じ360度カメラで取得した他の画像にそのまま適用させることができます。
 
 
 ```matlab
-% �摜�i���j�̃p�����[�^�ݒ�
-fovL  = 190; % [�x]
-rollL = 1; % [�x]
-tiltL = 0; % [�x]
-panL  = 2; % [�x]
-% �摜�i�E�j�̃p�����[�^�ݒ�
-fovR  = 195; % [�x]
-rollR = 3.5; % [�x]
-tiltR = -2; % [�x]
-panR  = 180; % [�x]
+% 画像（左）のパラメータ設定
+fovL  = 190; % [度]
+rollL = 1; % [度]
+tiltL = 0; % [度]
+panL  = 2; % [度]
+% 画像（右）のパラメータ設定
+fovR  = 195; % [度]
+rollR = 3.5; % [度]
+tiltR = -2; % [度]
+panR  = 180; % [度]
 
-% �����̃��\�b�h��I��
+% 可視化のメソッドを選択
 method = 'blend';
 
-% �����~���摜�ւ̕ϊ�
+% 正距円筒画像への変換
 EL = imfish2equ(IL,fovL,rollL,tiltL,panL);
 ER = imfish2equ(IR,fovR,rollR,tiltR,panR);
-% �]���ȗ̈�̍폜
+% 余分な領域の削除
 [EL,maskL] = trimImageByFov(EL,fovL,panL);
 [ER,maskR] = trimImageByFov(ER,fovR,panR);
-% ���E�̉摜���d�˂ĕ\��
+% 左右の画像を重ねて表示
 Efused = imfuse(EL,ER,method);
 wrange = round(size(Efused,2)*0.5);
 imshow(Efused(:,1:wrange,:),'Parent',ax1);
@@ -165,17 +165,17 @@ imshow(Efused,'Parent',ax3);
 
 ![figure_5.png](doc_images/figure_5.png)
 
-### �摜�̍����i�u�����f�B���O�j
+### 画像の合成（ブレンディング）
 
 
-�������I����2�摜�ɑ΂��A�d�Ȃ荇�����̈���������Ă����܂��B�P���ȃA���t�@�u�����f�B���O�ł͋��E�ł̋}�ȋP�x�ω��ɂ��؂��������悤�ȉ摜�ɂȂ��Ă��܂����߁A�A���t�@�̒l���d�Ȃ荇���������Ő��`�ɕω����Ă����悤�ɂ��܂�[1]�B
+調整を終えた2つ画像に対し、重なり合った領域を合成していきます。単純なアルファブレンディングでは境界での急な輝度変化により筋が入ったような画像になってしまうため、アルファの値が重なり合った部分で線形に変化していくようにします[1]。
 
 
 ```matlab
-% �d�Ȃ蕔���̃C���f�b�N�X���擾
+% 重なり部分のインデックスを取得
 maskB = maskL & maskR;
 
-% ���`�ɕω�����A���t�@�l�̍쐬
+% 線形に変化するアルファ値の作成
 stat = regionprops('table',maskB,'Area','PixelIdxList','Image');
 alpha = zeros(size(maskB));
 idx = stat.PixelIdxList{1};
@@ -193,26 +193,26 @@ title('Alpha Image');
 ![figure_6.png](doc_images/figure_6.png)
 
 ```matlab
-% �쐬�����A���t�@�l��p���ĉ摜������
+% 作成したアルファ値を用いて画像を合成
 ELR = alpha.*double(EL) + (1-alpha).*double(ER);
 ELR = uint8(ELR);
 
-% �����摜�̊m�F
+% 合成画像の確認
 figure
 imshow(ELR)
 ```
 
 ![figure_7.png](doc_images/figure_7.png)
 
-### �J�������_�ł�360�x�摜�̊m�F
+### カメラ視点での360度画像の確認
 
 
-���L�̎���֐����R�}���h�E�B���h�E�Ŏ��s�����Ă��������B�}�E�X�̃h���b�O�A���h�h���b�v����ŃJ�������_�𓮂������Ƃ��ł��܂��B
+下記の自作関数をコマンドウィンドウで実行※してください。マウスのドラッグアンドドロップ操作でカメラ視点を動かすことができます。
 
 
 
 
-�����̎���֐��ɂ�R2019b���_��LiveScrip�ɖ��Ή��̋@�\�����邽�߁A���s�́h�R�}���h���C����h�������́h.m�t�@�C���`���h�ł��������������B
+※この自作関数にはR2019b時点でLiveScripに未対応の機能があるため、実行は”コマンドライン上”もしくは”.mファイル形式”でお試しください。
 
 
 ```matlab
@@ -225,9 +225,7 @@ imshow(ELR)
 
 
   
-### �T�|�[�g�֐�
-
-\hfill \break
+### サポート関数
 
 ```matlab
 function [IE2,mask] = trimImageByFov(IE,fov,pan)
@@ -245,6 +243,6 @@ end
 ```
 
 
-Copy right 2020 The MathWorks, Inc.
+Copy right 2020 Kazuya Machida
 
 
