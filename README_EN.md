@@ -232,6 +232,6 @@ end
 ```
 
 
-Copy right 2020 The MathWorks, Inc.
+Copy right 2020 Kazuya Machida
 
 
