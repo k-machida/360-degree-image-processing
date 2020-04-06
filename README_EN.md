@@ -216,8 +216,6 @@ Run the following custom function in your command window. You can move the camer
   
 ### Support Function
 
-\hfill \break
-
 ```matlab
 function [IE2,mask] = trimImageByFov(IE,fov,pan)
     w  = int16(size(IE,2));
